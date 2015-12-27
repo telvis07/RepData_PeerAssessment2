@@ -105,17 +105,71 @@ Now lets calculate the property damage in `TOTALCOST`
 df$TOTALCOST <- df$PROPDMG * 10 ** df$PROPDMGEXP_mapped
 ```
 
+Finally, let's aggregate our transformed data by `EVTYPE` since all of our results are based on aggreagate of `EVTYPE`
+
+```{r group_by_evtype,cache=TRUE,echo=TRUE}
+by_evtype <- group_by(df, EVTYPE)
+```
 
 ## Results
 
-### Public Health Impact
+### Across the United States, which types of events are most harmful with respect to population health? 
 
-Across the United States, which types of events (as indicated in the EVTYPE variable) are most harmful with respect to population health?
+`TORNADO` events have the greatest public health impact if we rank based on `Fatalities`. The next greatest event type is `EXCESSIVE HEAT` - which has resulted in 2000 deaths since 1950.
 
-### Economic Impact
-Across the United States, which types of events have the greatest economic consequences?
+```{r storm_by_fatalities,echo=TRUE}
+fatalities_by_evtype <- summarize(by_evtype, FATALITIES=sum(FATALITIES, na.rm=TRUE)) %>% 
+                        arrange(desc(FATALITIES))
+top_fatalities_by_evtype = head(fatalities_by_evtype, n=5)
 
-TODO....
-- At most 3 plots
+# plot
+barplot(height=top_fatalities_by_evtype$FATALITIES, 
+          names.arg = top_fatalities_by_evtype$EVTYPE, 
+          cex.names=0.50, 
+          col = "wheat",
+          ylab = "Number of Fatalities", 
+          xlab = "Storm Data Event Type", 
+          main="Top 5 Storm Event Types by Fatalities from 1950 - November 2011")
+```
 
 
+`TORNADO` events have the greatest public health impact if we rank based on `Injuries`. The next greatest event type is `THUNDERSTORM WIND`.
+
+
+```{r storm_by_injuries,echo=TRUE}
+injuries_by_evtype <- summarize(by_evtype, INJURIES=sum(INJURIES, na.rm=TRUE)) %>% 
+                      arrange(desc(INJURIES))
+top_injuries_by_evtype = head(injuries_by_evtype, n=5)
+
+#plot
+barplot(height=top_injuries_by_evtype$INJURIES, 
+        names.arg=top_injuries_by_evtype$EVTYPE, 
+        cex.names = 0.50, 
+        col = "wheat",
+        ylab = "Number of Injuries", 
+        xlab = "Storm Data Event Type", 
+        main="Top 5 Storm Event Types by Injuries from 1950 - November 2011")
+```
+
+
+### Across the United States, which types of events have the greatest economic consequences?
+
+`FLOOD` events have the greatest economic impact, followed by `HURRICANE/TYPHOON`. Also, notice that `TORNADO` is in the top 5 storm events based on ecomomic impact.
+
+```{r storm_by_total_cost,echo=TRUE}
+prop_dmg_by_evtype <- summarize(by_evtype, TOTALCOST=sum(TOTALCOST, na.rm=TRUE)) %>% arrange(desc(TOTALCOST))
+top_prop_dmg_by_evtype = head(prop_dmg_by_evtype, n=5)
+
+# plot
+barplot(height=top_prop_dmg_by_evtype$TOTALCOST, 
+        names.arg = top_prop_dmg_by_evtype$EVTYPE, 
+        cex.names=0.50,
+        col = "wheat",
+        ylab = "Total Property Damage (in dollars)", 
+        xlab = "Storm Data Event Type", 
+        main="Top 5 Storm Event Types by Property Damage (in dollars) from 1950 - November 2011")
+```
+
+## Conclusion
+
+**Tornados** pose a significant public health risk in terms of injuries, fatalities and ecomomic cost. Additionally, **Excessive Heat** poses a public health risk based on fatalities. **Floods** pose the greatest risk in terms of economic cost.
