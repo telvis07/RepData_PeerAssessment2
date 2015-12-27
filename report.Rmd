@@ -12,28 +12,109 @@ output:
 
 Title: Analyisis to determine economic impact of severe weather events using NOAA storm data
 
-Synopsis: In this document, we analyze the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database to determine the economic impact of different weather events. The goal of the analysis is to rank the storm events based on their economic impact. Our hope is that this ranking will help policy-makers to allocate emergency management funds to the events with the greatest economic impact.  
+Synopsis: In this document, we analyze the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database to determine the economic impact of different weather events. The goal of the analysis is to rank the storm events based on (1) public health impact and (2) economic impact. Our hope is that this ranking will inform policy makers as they allocate emergency management funds to the events with the greatest economic impact.  
 
 ## Data Processing
-
+We must first pre-process data prior to performing the analysis. This section shows the data transformation steps performed on the raw NOAA storm data.
 
 First, lets load libraries used in the analysis
 
 ```{r, message=FALSE}
 library(lubridate)
 library(dplyr)
-library(ggplot2)
 ```
 
-Let's load the data
-```{r,echo=TRUE}
-df <- read.csv("activity.csv", na.strings = "NA", stringsAsFactors = FALSE)
+Now we will fetch the data and load CSV file. The file in bzip'd so we'll use bzfile()
+```{r loaddata,echo=TRUE,cache=TRUE}
+if(!file.exists("repdata-data-StormData.csv.bz2")){
+  download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2", 
+              "repdata-data-StormData.csv.bz2", method = "curl")
+}
+df <- read.csv(bzfile("repdata-data-StormData.csv.bz2"), na.strings="", stringsAsFactors = FALSE)
 ```
 
-TODO...
+### EVTYPE Cleanup
+The values in the `EVTYPE` column are not consistent for the same event type. One example is "THUNDERSTORM WIND". It appears in the data as variations of "TSTM WIND", "THUNDERSTORM WINDS" and many other values that include arbitrary prefixes and suffixes. Let's attempt to normalize those variations.
+
+```{r fix_tstm,echo=TRUE,cache=TRUE}
+  # fix thunderstorm wind labels. Being careful not to change 'MARINE THUNDERSTORM WIND'.
+  df <- mutate(df, 
+               EVTYPE=ifelse(grepl("^(?!MARINE)?\\s*TSTM", EVTYPE, perl=TRUE), 
+                             "THUNDERSTORM WIND", 
+                             EVTYPE))
+  df <- mutate(df, 
+               EVTYPE=ifelse(grepl("^(?!MARINE)?\\s*THUNDERSTORM", EVTYPE, perl=TRUE), 
+                             "THUNDERSTORM WIND", 
+                             EVTYPE))
+  
+  # fix marine thunderstorm winds
+  df <- mutate(df, EVTYPE=ifelse(grepl("MARINE\\s*TSTM", EVTYPE, perl=TRUE), 
+                                 "MARINE THUNDERSTORM WIND", 
+                                 EVTYPE))
+  df <- mutate(df, EVTYPE=ifelse(grepl("MARINE\\s*THUNDERSTORM", EVTYPE, perl=TRUE), 
+                                 "MARINE THUNDERSTORM WIND", 
+                                 EVTYPE))
+```
+
+NOTE: There are probably other event types that coud be cleaned up. "THUNDERSTORM WIND" was the only value that impacted our rank analysis.
+
+Finally, let's convert `EVTYPE` to a factor variable. This is useful for when we use `dplyr::group_by`.
+
+```{r as_factor,echo=TRUE}
+df <- transform(df, EVTYPE=factor(EVTYPE))
+```
+
+### PROPDMGEXP Cleanup
+
+The `PROPDMGEXP` column defines the power of 10 to multiply by `PROPDMG` to calculate the Property Damage in Dollars. Unfornately, the values in this column are string integers (e.g. "1", "2") or humanized abbreviations (e.g. K = thousands of dollars) or strange values like `+` and `?`. Let's clean this up.
+
+```{r fix_propdmgexp,echo=TRUE}
+# Show the values in the RAW data. 
+table(df$PROPDMGEXP)
+  
+# function to perform the tranformation from the various input values
+map_propdmgexp <- function(x){
+  x <- x[[1]]
+  
+  if (is.na(x)){
+    ret = NA
+  } else if ( x %in% c("-","?","+")){
+    ret = NA 
+  } else if (toupper(x) %in% c("B", "K", "M", "H")){
+    exp_mappings <- c("B"=9, "H"=2, "K"=3, "M"=6)
+    ret = exp_mappings[toupper(x)]
+  } else {
+    # assume its a number string
+    ret = as.numeric(x)
+    if (is.na(ret)){
+      stop(sprintf("Unexpected 'NA' %s", x))
+    }
+  }
+  ret
+}
+
+# use mapply and map_propdmgexp() to convert 'exp' values
+df$PROPDMGEXP_mapped <- mapply(map_propdmgexp, df$PROPDMGEXP)
+
+# check the values now. should all be integer strings
+table(df$PROPDMGEXP_mapped)
+```
+
+Now lets calculate the property damage in `TOTALCOST`
+```{r calc_total_cost, echo=TRUE}
+df$TOTALCOST <- df$PROPDMG * 10 ** df$PROPDMGEXP_mapped
+```
 
 
 ## Results
+
+### Public Health Impact
+
+Across the United States, which types of events (as indicated in the EVTYPE variable) are most harmful with respect to population health?
+
+### Economic Impact
+Across the United States, which types of events have the greatest economic consequences?
+
 TODO....
 - At most 3 plots
 

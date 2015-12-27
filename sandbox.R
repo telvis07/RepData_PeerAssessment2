@@ -1,10 +1,6 @@
 library(dplyr)
 library(lubridate)
-library(ggplot2)
 
-fix_colnames <- function(df){
-  # TODO
-}
 
 map_propdmgexp <- function(x){
   x <- x[[1]]
@@ -13,7 +9,7 @@ map_propdmgexp <- function(x){
     ret = NA
   } else if ( x %in% c("-","?","+")){
     ret = NA 
-  } else if (toupper(x) %in% c("B", "K", "M", "B", "H")){
+  } else if (toupper(x) %in% c("B", "K", "M", "H")){
     exp_mappings <- c("B"=9, "H"=2, "K"=3, "M"=6)
     ret = exp_mappings[toupper(x)]
   } else {
@@ -62,7 +58,7 @@ do_the_plots <- function(top_lists){
 
   barplot(height=top_fatalities_by_evtype$FATALITIES, 
           names.arg = top_fatalities_by_evtype$EVTYPE, 
-          cex.names=0.50, 
+          cex.names=0.75, 
           col = "wheat",
           ylab = "Number of Fatalities", 
           xlab = "Storm Data Event Type", 
@@ -70,7 +66,7 @@ do_the_plots <- function(top_lists){
 
   barplot(height=top_injuries_by_evtype$INJURIES, 
           names.arg=top_injuries_by_evtype$EVTYPE, 
-          cex.names = 0.50, 
+          cex.names = 0.75, 
           col = "wheat",
           ylab = "Number of Injuries", 
           xlab = "Storm Data Event Type", 
@@ -78,7 +74,7 @@ do_the_plots <- function(top_lists){
 
   barplot(height=top_prop_dmg_by_evtype$TOTALCOST, 
           names.arg = top_prop_dmg_by_evtype$EVTYPE, 
-          cex.names=0.50,
+          cex.names=0.75,
           col = "wheat",
           ylab = "Total Property Damage (in dollars)", 
           xlab = "Storm Data Event Type", 
