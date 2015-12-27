@@ -1,0 +1,40 @@
+---
+title: Analyisis to determine economic impact of severe weather events using NOAA
+  storm data
+author: "Telvis Calhoun"
+date: "December 26, 2015"
+output:
+  html_document:
+    keep_md: true
+---
+
+## Introduction
+
+Title: Analyisis to determine economic impact of severe weather events using NOAA storm data
+
+Synopsis: In this document, we analyze the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database to determine the economic impact of different weather events. The goal of the analysis is to rank the storm events based on their economic impact. Our hope is that this ranking will help policy-makers to allocate emergency management funds to the events with the greatest economic impact.  
+
+## Data Processing
+
+
+First, lets load libraries used in the analysis
+
+```{r, message=FALSE}
+library(lubridate)
+library(dplyr)
+library(ggplot2)
+```
+
+Let's load the data
+```{r,echo=TRUE}
+df <- read.csv("activity.csv", na.strings = "NA", stringsAsFactors = FALSE)
+```
+
+TODO...
+
+
+## Results
+TODO....
+- At most 3 plots
+
+
