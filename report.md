@@ -1,21 +1,18 @@
-# Analyisis to determine economic impact of severe weather events using NOAA storm data
+# Analysis to determine the public health and economic impact of severe weather events using NOAA storm data
 Telvis Calhoun  
 December 26, 2015  
 
-## Introduction
+## Synopsis
 
-Title: Analyisis to determine economic impact of severe weather events using NOAA storm data
-
-Synopsis: In this document, we analyze the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database to determine the economic impact of different weather events. The goal of the analysis is to rank the storm events based on (1) public health impact and (2) economic impact. Our hope is that this ranking will inform policy makers as they allocate emergency management funds to the events with the greatest economic impact.  
+In this document, we analyze the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database. The goal of the analysis is to rank the weather events based on (1) public health impact and (2) economic impact. Our hope is that this ranking will inform policy makers as they allocate emergency management funds to the events with the greatest economic impact.  
 
 ## Data Processing
-We must first pre-process data prior to performing the analysis. This section shows the data transformation steps performed on the raw NOAA storm data.
+We must first pre-process the data prior to performing the analysis. This section shows the data transformation steps performed on the raw NOAA storm data.
 
 First, lets load libraries used in the analysis
 
 
 ```r
-library(lubridate)
 library(dplyr)
 ```
 
@@ -121,7 +118,7 @@ Now lets calculate the property damage in `TOTALCOST`
 df$TOTALCOST <- df$PROPDMG * 10 ** df$PROPDMGEXP_mapped
 ```
 
-Finally, let's aggregate our transformed data by `EVTYPE` since all of our results are based on aggreagate of `EVTYPE`
+Finally, let's aggregate our transformed data by `EVTYPE` since all of our results are based on aggregates of `EVTYPE`
 
 
 ```r
@@ -132,7 +129,7 @@ by_evtype <- group_by(df, EVTYPE)
 
 ### Across the United States, which types of events are most harmful with respect to population health? 
 
-`TORNADO` events have the greatest public health impact if we rank based on `Fatalities`. The next greatest event type is `EXCESSIVE HEAT` - which has resulted in 2000 deaths since 1950.
+`TORNADO` events have the greatest public health impact if we rank based on `Fatalities`. The next greatest event type is `EXCESSIVE HEAT` - which has caused over 2000 deaths since 1950.
 
 
 ```r
